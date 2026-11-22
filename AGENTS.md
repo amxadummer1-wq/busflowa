@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## BUS FLOW architecture
+
+- Keep personal fields in `public.profiles` and privileges in `public.user_roles`; every privileged staff action must verify the authenticated caller's admin role before loading the server-only admin client. This prevents profile edits or client input from granting permissions.
+- Keep the `/` route as the splash/auth entry and place named role pages beneath a shared authenticated route layout. This preserves one home route and a consistent session gate.
