@@ -8,6 +8,20 @@
       "when": 1795366000047,
       "tag": "0000_bus_flow_profiles_and_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795544940856,
+      "tag": "0001_add_head_admin_and_bus_owner_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795544971191,
+      "tag": "0002_add_owner_upi_and_bus_records",
+      "breakpoints": true
     }
   ]
 }

@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      buses: {
+        Row: {
+          assigned_route: string | null
+          bus_number: string
+          created_at: string
+          id: string
+          is_active: boolean
+          owner_id: string
+          updated_at: string
+          upi_id: string | null
+          upi_payee_name: string | null
+        }
+        Insert: {
+          assigned_route?: string | null
+          bus_number: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_id: string
+          updated_at?: string
+          upi_id?: string | null
+          upi_payee_name?: string | null
+        }
+        Update: {
+          assigned_route?: string | null
+          bus_number?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          owner_id?: string
+          updated_at?: string
+          upi_id?: string | null
+          upi_payee_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buses_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           assigned_bus: string | null
@@ -25,6 +69,8 @@ export type Database = {
           is_active: boolean
           phone: string
           updated_at: string
+          upi_id: string | null
+          upi_payee_name: string | null
         }
         Insert: {
           assigned_bus?: string | null
@@ -36,6 +82,8 @@ export type Database = {
           is_active?: boolean
           phone?: string
           updated_at?: string
+          upi_id?: string | null
+          upi_payee_name?: string | null
         }
         Update: {
           assigned_bus?: string | null
@@ -47,6 +95,8 @@ export type Database = {
           is_active?: boolean
           phone?: string
           updated_at?: string
+          upi_id?: string | null
+          upi_payee_name?: string | null
         }
         Relationships: []
       }
@@ -85,7 +135,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "conductor"
+      app_role: "admin" | "conductor" | "head_admin" | "bus_owner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -213,7 +263,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "conductor"],
+      app_role: ["admin", "conductor", "head_admin", "bus_owner"],
     },
   },
 } as const
