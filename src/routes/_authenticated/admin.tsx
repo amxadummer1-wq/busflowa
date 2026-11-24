@@ -12,6 +12,7 @@ import {
   CircleUserRound,
   ClipboardList,
   FileChartColumnIncreasing,
+  LockKeyhole,
   MapPin,
   MoreHorizontal,
   Plus,
@@ -39,7 +40,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { getAdminWorkspace } from "@/lib/admin.functions";
+import {
+  createConductorAccount,
+  deleteConductorAccount,
+  getAdminWorkspace,
+  resetConductorPassword,
+  updateConductorAccount,
+} from "@/lib/admin.functions";
 import type { StaffRecord } from "@/lib/admin.functions";
 import {
   createConductorSchema,

@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, LoaderCircle, LockKeyhole, Mail, Phone, UserRound } from "lucide-react";
 import { LovableMark } from "@lovable.dev/cloud-auth-js/react";
 
-import busSplash from "@/assets/bus-splash.webp";
+import busSplash from "@/assets/bus-splash.png";
 import { BrandLockup } from "@/components/brand-lockup";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

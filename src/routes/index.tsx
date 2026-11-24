@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import busSplash from "@/assets/bus-splash.webp";
+import busSplash from "@/assets/bus-splash.png";
 import { BrandLockup } from "@/components/brand-lockup";
 import { getSignedInAccess } from "@/lib/auth-client";
 import { homeForRoles } from "@/lib/role-access";

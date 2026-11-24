@@ -33,3 +33,4 @@ use the editor.
 
 - Keep personal fields in `public.profiles` and privileges in `public.user_roles`; every privileged staff action must verify the authenticated caller's admin role before loading the server-only admin client. This prevents profile edits or client input from granting permissions.
 - Keep the `/` route as the splash/auth entry and place named role pages beneath a shared authenticated route layout. This preserves one home route and a consistent session gate.
+- Keep the protected `/conductor` page as a minimal destination until conductor features are scheduled, so role navigation resolves without prematurely implementing them.

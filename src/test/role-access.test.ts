@@ -15,6 +15,10 @@ describe("role-based dashboard access", () => {
     expect(canAccessDashboard(["conductor"], "admin", true)).toBe(false);
   });
 
+  it("allows an active Conductor to open the Conductor destination", () => {
+    expect(canAccessDashboard(["conductor"], "conductor", true)).toBe(true);
+  });
+
   it("blocks inactive staff from either dashboard", () => {
     expect(homeForRoles(["conductor"], false)).toBe("/access-denied");
     expect(canAccessDashboard(["conductor"], "conductor", false)).toBe(false);
