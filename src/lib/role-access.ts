@@ -1,9 +1,9 @@
-export type AppRole = "admin" | "conductor";
+export type AppRole = "admin" | "conductor" | "head_admin" | "bus_owner";
 export type DashboardPath = "/admin" | "/conductor" | "/access-denied";
 
 export function homeForRoles(roles: readonly AppRole[], isActive: boolean): DashboardPath {
   if (!isActive || roles.length === 0) return "/access-denied";
-  if (roles.includes("admin")) return "/admin";
+  if (roles.includes("admin") || roles.includes("head_admin")) return "/admin";
   if (roles.includes("conductor")) return "/conductor";
   return "/access-denied";
 }
@@ -13,6 +13,18 @@ export function canAccessDashboard(
   requestedRole: AppRole,
   isActive: boolean,
 ): boolean {
-  const requestedPath = requestedRole === "admin" ? "/admin" : "/conductor";
-  return isActive && roles.includes(requestedRole) && homeForRoles(roles, isActive) === requestedPath;
+  if (!isActive) return false;
+
+  const requestedPath = requestedRole === "conductor"
+    ? "/conductor"
+    : requestedRole === "bus_owner"
+      ? "/access-denied"
+      : "/admin";
+  const hasRequestedRole = requestedRole === "admin"
+    ? roles.includes("admin") || roles.includes("head_admin")
+    : roles.includes(requestedRole);
+
+  return requestedPath !== "/access-denied"
+    && hasRequestedRole
+    && homeForRoles(roles, isActive) === requestedPath;
 }

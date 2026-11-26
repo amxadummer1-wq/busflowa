@@ -7,6 +7,11 @@ describe("role-based dashboard access", () => {
     expect(homeForRoles(["admin"], true)).toBe("/admin");
   });
 
+  it("sends Head Admin accounts to the Admin dashboard", () => {
+    expect(homeForRoles(["head_admin"], true)).toBe("/admin");
+    expect(canAccessDashboard(["head_admin"], "admin", true)).toBe(true);
+  });
+
   it("sends Conductor accounts to the Conductor destination", () => {
     expect(homeForRoles(["conductor"], true)).toBe("/conductor");
   });
@@ -26,5 +31,11 @@ describe("role-based dashboard access", () => {
 
   it("denies an account without an assigned role", () => {
     expect(homeForRoles([], true)).toBe("/access-denied");
+  });
+
+  it("does not grant Bus Owners access to unbuilt Admin or Conductor workspaces", () => {
+    expect(homeForRoles(["bus_owner"], true)).toBe("/access-denied");
+    expect(canAccessDashboard(["bus_owner"], "admin", true)).toBe(false);
+    expect(canAccessDashboard(["bus_owner"], "conductor", true)).toBe(false);
   });
 });

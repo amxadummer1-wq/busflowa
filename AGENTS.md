@@ -32,6 +32,7 @@ use the editor.
 ## BUS FLOW architecture
 
 - Keep personal fields in `public.profiles` and privileges in `public.user_roles`; treat legacy `admin` accounts as Head Admins, keep `bus_owner` separate, and verify Head Admin access before privileged server actions so client input cannot grant roles.
+- Route `head_admin` accounts to the existing `/admin` workspace, while denying `bus_owner` access to Admin or Conductor workspaces until a dedicated owner area exists; this prevents role overlap from granting unintended access.
 - Store owner-wide UPI settings in `public.profiles` and optional per-bus overrides in `public.buses`; scope bus access by owner so payment details stay within the correct fleet.
 - Keep the `/` route as the splash/auth entry and place named role pages beneath a shared authenticated route layout. This preserves one home route and a consistent session gate.
 - Keep the protected `/conductor` page as a minimal destination until conductor features are scheduled, so role navigation resolves without prematurely implementing them.
