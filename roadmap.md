@@ -1,5 +1,6 @@
 # BUS FLOW Phase 1 Roadmap
 
+- [ ] Wait for the user's next detailed prompt, then complete the outstanding Phase 1 requests, including the Head Admin and Conductor workspaces.
 - [x] Fix the current build blockers: correct the splash image path and restore Admin dashboard imports.
 - [ ] Add Head Admin, Bus Owner, and Conductor access with server-verified role assignment and persistent owner/bus UPI settings.
 - [ ] Build the animated, automatically advancing splash and validated sign-in with secure role-based navigation.

@@ -257,6 +257,10 @@
     linear-gradient(180deg, color-mix(in oklab, var(--secondary) 45%, white), var(--background));
 }
 
+#lovable-badge {
+  display: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
