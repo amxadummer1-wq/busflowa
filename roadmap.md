@@ -1,10 +1,8 @@
-# BUS FLOW Phase 1 Roadmap
+# BUS FLOW Roadmap
 
-- [ ] Wait for the user's next detailed prompt, then complete the outstanding Phase 1 requests, including the Head Admin and Conductor workspaces.
-- [x] Fix the current build blockers: correct the splash image path and restore Admin dashboard imports.
-- [ ] Add Head Admin, Bus Owner, and Conductor access with server-verified role assignment and persistent owner/bus UPI settings.
-- [ ] Build the animated, automatically advancing splash and validated sign-in with secure role-based navigation.
-- [ ] Finish the mobile-first Head Admin dashboard, summary counts, shortcut grid, Users & Staff, and Bus Owner provisioning.
-- [ ] Add a protected Bus Owner area for owner UPI settings and bus records; keep per-bus UPI overrides optional.
-- [x] Prepare a protected Conductor destination without building the future conductor dashboard, booking, QR payment, or ticket-generation features.
-- [ ] Add manifest-only install support and verify the signed-in role flows, mobile layouts, and project checks.
+- [ ] Complete mobile-first Head Admin, Bus Owner, and Conductor workspaces, including staff, owner, bus, route, assignment, and status management.
+- [ ] Add conductor ticket booking, dynamic UPI QR payment using the assigned bus/owner details, and QR tickets with safe payment status handling.
+- [ ] Replace the current splash bus image with a more realistic bus scene and smooth motion while preserving automatic sign-in navigation.
+- [ ] Keep role assignment and workspace data access server-verified and scoped to the correct fleet.
+- [x] Fix the earlier build blockers and keep a protected Conductor destination available.
+- [ ] Verify authentication and role flows, responsive layouts, PWA install support, and project checks.
