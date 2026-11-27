@@ -100,6 +100,81 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          assigned_route: string
+          boarding_point: string
+          bus_id: string
+          bus_number: string
+          conductor_id: string
+          created_at: string
+          destination: string
+          fare_amount: number
+          id: string
+          owner_id: string
+          passenger_count: number
+          payment_confirmed_at: string | null
+          payment_confirmed_by: string | null
+          payment_status: string
+          ticket_code: string
+          upi_id: string
+          upi_payee_name: string
+        }
+        Insert: {
+          assigned_route: string
+          boarding_point: string
+          bus_id: string
+          bus_number: string
+          conductor_id: string
+          created_at?: string
+          destination: string
+          fare_amount: number
+          id?: string
+          owner_id: string
+          passenger_count?: number
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_status?: string
+          ticket_code: string
+          upi_id: string
+          upi_payee_name: string
+        }
+        Update: {
+          assigned_route?: string
+          boarding_point?: string
+          bus_id?: string
+          bus_number?: string
+          conductor_id?: string
+          created_at?: string
+          destination?: string
+          fare_amount?: number
+          id?: string
+          owner_id?: string
+          passenger_count?: number
+          payment_confirmed_at?: string | null
+          payment_confirmed_by?: string | null
+          payment_status?: string
+          ticket_code?: string
+          upi_id?: string
+          upi_payee_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
