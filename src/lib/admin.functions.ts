@@ -4,9 +4,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Enums } from "@/integrations/supabase/types";
 import {
+  createBusOwnerSchema,
   createConductorSchema,
   deleteConductorSchema,
   resetConductorPasswordSchema,
+  updateBusOwnerSchema,
   updateConductorSchema,
 } from "@/lib/auth-schemas";
 
@@ -39,11 +41,13 @@ export type AdminWorkspace = {
 };
 
 async function assertAdmin(context: AuthContext): Promise<void> {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
-  if (error || !data) throw new Error("Admin access is required for this action.");
+  const [adminResult, headAdminResult] = await Promise.all([
+    context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" }),
+    context.supabase.rpc("has_role", { _user_id: context.userId, _role: "head_admin" }),
+  ]);
+  if (adminResult.error || headAdminResult.error || (!adminResult.data && !headAdminResult.data)) {
+    throw new Error("Head Admin access is required for this action.");
+  }
 }
 
 async function assertConductorTarget(context: AuthContext, targetUserId: string): Promise<void> {
@@ -60,15 +64,26 @@ export const getAdminWorkspace = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<AdminWorkspace> => {
     await assertAdmin(context);
-    const [profilesResult, rolesResult] = await Promise.all([
+    const indiaNow = new Date(Date.now() + 330 * 60 * 1000);
+    const indiaDayStart = new Date(Date.UTC(
+      indiaNow.getUTCFullYear(),
+      indiaNow.getUTCMonth(),
+      indiaNow.getUTCDate(),
+    ) - 330 * 60 * 1000).toISOString();
+    const [profilesResult, rolesResult, busesResult, ticketsResult] = await Promise.all([
       context.supabase
         .from("profiles")
         .select("id, email, full_name, phone, assigned_bus, assigned_route, is_active")
         .order("full_name"),
       context.supabase.from("user_roles").select("user_id, role"),
+      context.supabase.from("buses").select("id, bus_number, assigned_route, is_active"),
+      context.supabase
+        .from("tickets")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", indiaDayStart),
     ]);
 
-    if (profilesResult.error || rolesResult.error) {
+    if (profilesResult.error || rolesResult.error || busesResult.error || ticketsResult.error) {
       throw new Error("The Admin workspace could not be loaded. Please refresh and try again.");
     }
 
@@ -91,24 +106,115 @@ export const getAdminWorkspace = createServerFn({ method: "GET" })
         isActive: profile.is_active,
       }));
 
-    const assignedBuses = new Set<string>();
     const activeRoutes = new Set<string>();
-    for (const conductor of staff) {
-      if (conductor.assignedBus) assignedBuses.add(conductor.assignedBus);
-      if (conductor.isActive && conductor.assignedRoute) activeRoutes.add(conductor.assignedRoute);
+    for (const bus of busesResult.data ?? []) {
+      if (bus.is_active && bus.assigned_route) activeRoutes.add(bus.assigned_route);
     }
 
     const currentAdmin = (profilesResult.data ?? []).find((profile) => profile.id === context.userId);
     return {
       adminName: currentAdmin?.full_name.trim() || "Admin",
       stats: {
-        totalBuses: assignedBuses.size,
+        totalBuses: busesResult.data?.length ?? 0,
         activeRoutes: activeRoutes.size,
         totalConductors: staff.length,
-        todaysBookings: 0,
+        todaysBookings: ticketsResult.count ?? 0,
       },
       staff,
     };
+  });
+
+export const createBusOwnerAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => createBusOwnerSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.initialPassword,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName, phone: data.phone },
+    });
+    if (error || !created.user) {
+      throw new Error("The Bus Owner account could not be created. Check the email and try again.");
+    }
+
+    const userId = created.user.id;
+    try {
+      const { error: removeAdminRoleError } = await supabaseAdmin
+        .from("user_roles")
+        .delete()
+        .eq("user_id", userId)
+        .eq("role", "admin");
+      if (removeAdminRoleError) throw new Error("Role setup failed.");
+
+      const { error: addOwnerRoleError } = await supabaseAdmin
+        .from("user_roles")
+        .insert({ user_id: userId, role: "bus_owner" });
+      if (addOwnerRoleError) throw new Error("Role setup failed.");
+
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .update({ email: data.email, full_name: data.fullName, phone: data.phone })
+        .eq("id", userId);
+      if (profileError) throw new Error("Profile setup failed.");
+    } catch {
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw new Error("The Bus Owner account could not be completed. No account was kept.");
+    }
+
+    return { success: true, id: userId };
+  });
+
+export const updateBusOwnerAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => updateBusOwnerSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context);
+    const { data: ownerRole, error: roleError } = await context.supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", data.id)
+      .eq("role", "bus_owner")
+      .maybeSingle();
+    if (roleError || !ownerRole) throw new Error("This Bus Owner account is no longer available.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existingProfile, error: profileLookupError } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (profileLookupError || !existingProfile) throw new Error("The Bus Owner profile could not be found.");
+
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(data.id, {
+      email: data.email,
+      email_confirm: true,
+      user_metadata: { full_name: data.fullName, phone: data.phone },
+    });
+    if (authError) throw new Error("The Bus Owner account could not be updated.");
+
+    const { error: updateError } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        email: data.email,
+        full_name: data.fullName,
+        phone: data.phone,
+        is_active: data.isActive,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", data.id);
+    if (updateError) {
+      if (existingProfile.email) {
+        await supabaseAdmin.auth.admin.updateUserById(data.id, {
+          email: existingProfile.email,
+          email_confirm: true,
+        });
+      }
+      throw new Error("The Bus Owner details could not be saved.");
+    }
+    return { success: true };
   });
 
 export const createConductorAccount = createServerFn({ method: "POST" })

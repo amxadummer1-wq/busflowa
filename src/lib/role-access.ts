@@ -1,9 +1,12 @@
-export type AppRole = "admin" | "conductor" | "head_admin" | "bus_owner";
-export type DashboardPath = "/admin" | "/conductor" | "/access-denied";
+import type { Enums } from "@/integrations/supabase/types";
+
+export type AppRole = Enums<"app_role">;
+export type DashboardPath = "/admin" | "/owner" | "/conductor" | "/access-denied";
 
 export function homeForRoles(roles: readonly AppRole[], isActive: boolean): DashboardPath {
   if (!isActive || roles.length === 0) return "/access-denied";
   if (roles.includes("admin") || roles.includes("head_admin")) return "/admin";
+  if (roles.includes("bus_owner")) return "/owner";
   if (roles.includes("conductor")) return "/conductor";
   return "/access-denied";
 }
@@ -15,16 +18,16 @@ export function canAccessDashboard(
 ): boolean {
   if (!isActive) return false;
 
-  const requestedPath = requestedRole === "conductor"
-    ? "/conductor"
-    : requestedRole === "bus_owner"
-      ? "/access-denied"
-      : "/admin";
+  const requestedPath: DashboardPath = {
+    admin: "/admin",
+    head_admin: "/admin",
+    bus_owner: "/owner",
+    conductor: "/conductor",
+  }[requestedRole];
   const hasRequestedRole = requestedRole === "admin"
     ? roles.includes("admin") || roles.includes("head_admin")
     : roles.includes(requestedRole);
 
-  return requestedPath !== "/access-denied"
-    && hasRequestedRole
+  return hasRequestedRole
     && homeForRoles(roles, isActive) === requestedPath;
 }

@@ -33,8 +33,9 @@ describe("role-based dashboard access", () => {
     expect(homeForRoles([], true)).toBe("/access-denied");
   });
 
-  it("does not grant Bus Owners access to unbuilt Admin or Conductor workspaces", () => {
-    expect(homeForRoles(["bus_owner"], true)).toBe("/access-denied");
+  it("sends Bus Owners to their own workspace without granting Admin or Conductor access", () => {
+    expect(homeForRoles(["bus_owner"], true)).toBe("/owner");
+    expect(canAccessDashboard(["bus_owner"], "bus_owner", true)).toBe(true);
     expect(canAccessDashboard(["bus_owner"], "admin", true)).toBe(false);
     expect(canAccessDashboard(["bus_owner"], "conductor", true)).toBe(false);
   });
